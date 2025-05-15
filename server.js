@@ -21,17 +21,17 @@ app.post("/webhook", async (req, res) => {
     const message = req.body.message?.body;
     const sender = req.body.message?.from;
 
-    if (!message || !sender) {
-      return res.sendStatus(400);
-    }
+    if (!message || !sender) return res.sendStatus(400);
 
     const result = await model.generateContent(message);
     const reply = result.response.text().trim();
 
-    // Enviar respuesta a WhatsApp vía UltraMsg
+    // Enviar respuesta por UltraMsg
     await fetch("https://api.ultramsg.com/instance120157/messages/chat", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
       body: new URLSearchParams({
         token: "ob3qn8omp769ev8o",
         to: sender,
@@ -41,7 +41,7 @@ app.post("/webhook", async (req, res) => {
 
     res.sendStatus(200);
   } catch (error) {
-    console.error("❌ ERROR EN RESPUESTA:", error);
+    console.error("❌ ERROR GEMINI:", error);
     res.sendStatus(500);
   }
 });
