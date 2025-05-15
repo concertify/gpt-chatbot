@@ -34,7 +34,7 @@ app.post('/webhook', async (req, res) => {
       geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text ||
       'Lo siento, no tengo una respuesta.';
 
-    // Envía la respuesta por UltraMSG
+    // Enviar respuesta por UltraMSG
     await axios.post(`https://api.ultramsg.com/${ULTRAMSG_INSTANCE}/messages/chat`, {
       token: ULTRAMSG_TOKEN,
       to: from,
@@ -51,17 +51,19 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// Ruta de test para probar conexión de UltraMSG
-app.post('/test', (req, res) => {
-  console.log('🧪 TEST recibido:', JSON.stringify(req.body, null, 2));
-  res.send('✅ Recibido en /test correctamente');
+// Rutas de test para debug
+app.get('/test', (req, res) => {
+  res.send('✅ GET /test funcionando');
 });
 
-// Ruta base para ver si el servidor está vivo
+app.post('/test', (req, res) => {
+  console.log('🧪 POST recibido en /test:', JSON.stringify(req.body, null, 2));
+  res.send('✅ POST /test recibido correctamente');
+});
+
 app.get('/', (req, res) => {
   res.send('Bot funcionando 😎');
 });
 
-// Iniciar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
