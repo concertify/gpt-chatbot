@@ -8,11 +8,12 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 
+// Inicializa el modelo Gemini 2.0 Flash
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const model = genAI.getGenerativeModel({ model: "models/gemini-2.0-flash" });
 
 app.get("/", (req, res) => {
-  res.send("✅ Servidor Gemini-Pro activo y listo para responder");
+  res.send("✅ Servidor Gemini 2.0 Flash activo y listo para responder");
 });
 
 app.post("/webhook", async (req, res) => {
