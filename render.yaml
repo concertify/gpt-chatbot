@@ -4,10 +4,10 @@ services:
     env: node
     plan: free
     buildCommand: "npm install"
-    startCommand: "npm start"
+    startCommand: "node index.js"
     envVars:
       - key: GEMINI_API_KEY
-        value: AIzaSyDvcMNRpWgKza99GZJK8d5j8AfLMLhrJOI
+        value: TU_CLAVE_DE_API_GEMINI
       - key: ULTRAMSG_INSTANCE
         value: instance120157
       - key: ULTRAMSG_TOKEN
