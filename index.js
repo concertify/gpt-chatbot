@@ -9,14 +9,20 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const ULTRAMSG_INSTANCE = process.env.ULTRAMSG_INSTANCE;
 const ULTRAMSG_TOKEN = process.env.ULTRAMSG_TOKEN;
 
+// Ruta principal del bot
 app.post('/webhook', async (req, res) => {
+  console.log('📩 Webhook recibido:', JSON.stringify(req.body, null, 2));
+
   const message = req.body.message?.body;
   const from = req.body.message?.from;
 
-  if (!message || !from) return res.sendStatus(400);
+  if (!message || !from) {
+    console.log('⚠️ Mensaje inválido recibido');
+    return res.sendStatus(400);
+  }
 
   try {
-    // Paso 1: Llamar a Gemini API
+    // Consulta a Gemini
     const geminiRes = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
       {
@@ -25,9 +31,10 @@ app.post('/webhook', async (req, res) => {
     );
 
     const reply =
-      geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || 'Lo siento, no tengo una respuesta.';
+      geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      'Lo siento, no tengo una respuesta.';
 
-    // Paso 2: Enviar mensaje de vuelta por UltraMSG
+    // Envía la respuesta por UltraMSG
     await axios.post(`https://api.ultramsg.com/${ULTRAMSG_INSTANCE}/messages/chat`, {
       token: ULTRAMSG_TOKEN,
       to: from,
@@ -36,16 +43,25 @@ app.post('/webhook', async (req, res) => {
       referenceId: '',
     });
 
+    console.log(`✅ Respondido a ${from}: ${reply}`);
     res.sendStatus(200);
   } catch (err) {
-    console.error('ERROR:', err.response?.data || err.message);
+    console.error('❌ Error procesando mensaje:', err.response?.data || err.message);
     res.sendStatus(500);
   }
 });
 
+// Ruta de test para probar conexión de UltraMSG
+app.post('/test', (req, res) => {
+  console.log('🧪 TEST recibido:', JSON.stringify(req.body, null, 2));
+  res.send('✅ Recibido en /test correctamente');
+});
+
+// Ruta base para ver si el servidor está vivo
 app.get('/', (req, res) => {
   res.send('Bot funcionando 😎');
 });
 
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
