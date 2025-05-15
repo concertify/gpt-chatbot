@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: whatsapp-gemini-bot
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: GEMINI_API_KEY
+        value: AIzaSyDvcMNRpWgKza99GZJK8d5j8AfLMLhrJOI
+      - key: ULTRAMSG_INSTANCE
+        value: instance120157
+      - key: ULTRAMSG_TOKEN
+        value: ob3qn8omp769ev8o
