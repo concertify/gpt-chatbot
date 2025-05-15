@@ -1,52 +1,30 @@
-import express from "express";
-import bodyParser from "body-parser";
-import fetch from "node-fetch";
-import dotenv from "dotenv";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-dotenv.config();
-
+const express = require('express');
+const bodyParser = require('body-parser');
+const axios = require('axios');
 const app = express();
+
 app.use(bodyParser.json());
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "models/gemini-2.0-flash" });
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const ULTRAMSG_INSTANCE = process.env.ULTRAMSG_INSTANCE;
+const ULTRAMSG_TOKEN = process.env.ULTRAMSG_TOKEN;
 
-app.get("/", (req, res) => {
-  res.send("✅ Servidor Gemini conectado a WhatsApp vía UltraMsg");
-});
+app.post('/webhook', async (req, res) => {
+  const message = req.body.message?.body;
+  const from = req.body.message?.from;
 
-app.post("/webhook", async (req, res) => {
+  if (!message || !from) return res.sendStatus(400);
+
   try {
-    const message = req.body.message?.body;
-    const sender = req.body.message?.from;
+    // Paso 1: Llamar a Gemini API
+    const geminiRes = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        contents: [{ parts: [{ text: message }] }]
+      }
+    );
 
-    if (!message || !sender) return res.sendStatus(400);
+    const reply =
+      geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || 'Lo siento, no tengo una respuesta.';
 
-    const result = await model.generateContent(message);
-    const reply = result.response.text().trim();
-
-    // Enviar respuesta por UltraMsg
-    await fetch("https://api.ultramsg.com/instance120157/messages/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        token: "ob3qn8omp769ev8o",
-        to: sender,
-        body: reply,
-      }),
-    });
-
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("❌ ERROR GEMINI:", error);
-    res.sendStatus(500);
-  }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
-});
+    // Paso
