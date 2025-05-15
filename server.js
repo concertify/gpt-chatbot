@@ -1,27 +1,26 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { Configuration, OpenAIApi } from "openai";
 import dotenv from "dotenv";
+import OpenAI from "openai";
 
 dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 app.get("/", (req, res) => {
-  res.send("✅ Servidor GPT-3.5-Turbo activo en Render con Node 24");
+  res.send("✅ Servidor GPT-3.5-Turbo activo en Render con ESM y Node 24");
 });
 
 app.post("/webhook", async (req, res) => {
   try {
     const userInput = req.body.queryResult.queryText;
 
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
@@ -35,10 +34,11 @@ app.post("/webhook", async (req, res) => {
       ],
     });
 
-    const reply = response.data.choices[0].message.content.trim();
+    const reply = response.choices[0].message.content.trim();
     res.json({ fulfillmentText: reply });
+
   } catch (error) {
-    console.error("❌ ERROR GPT:", error.message);
+    console.error("❌ ERROR GPT:", error);
     res.json({
       fulfillmentText: "Ocurrió un error al procesar tu mensaje con GPT.",
     });
