@@ -1,18 +1,38 @@
-{
-  "name": "gpt-render-bot",
-  "version": "1.0.0",
-  "main": "server.js",
-  "type": "module",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "body-parser": "^1.20.2",
-    "openai": "^4.13.1",
-    "dotenv": "^16.3.1"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+import express from "express";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+dotenv.config();
+
+const app = express();
+app.use(bodyParser.json());
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+app.get("/", (req, res) => {
+  res.send("✅ Servidor Gemini-Pro activo y listo para responder");
+});
+
+app.post("/webhook", async (req, res) => {
+  try {
+    const userInput = req.body.queryResult.queryText;
+
+    const result = await model.generateContent(userInput);
+    const reply = result.response.text().trim();
+
+    res.json({ fulfillmentText: reply });
+
+  } catch (error) {
+    console.error("❌ ERROR GEMINI:", error);
+    res.json({
+      fulfillmentText: "Ocurrió un error al procesar tu mensaje con Gemini.",
+    });
   }
-}
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor Gemini escuchando en puerto ${PORT}`);
+});
