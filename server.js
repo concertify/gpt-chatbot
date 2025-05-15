@@ -1,7 +1,9 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const { Configuration, OpenAIApi } = require("openai");
-require("dotenv").config();
+import express from "express";
+import bodyParser from "body-parser";
+import { Configuration, OpenAIApi } from "openai";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
@@ -12,7 +14,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 app.get("/", (req, res) => {
-  res.send("✅ Servidor GPT-3.5-Turbo activo en Render");
+  res.send("✅ Servidor GPT-3.5-Turbo activo en Render con Node 24");
 });
 
 app.post("/webhook", async (req, res) => {
